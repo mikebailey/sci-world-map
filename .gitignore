@@ -26,11 +26,6 @@ __pycache__/
 .venv/
 venv/
 
-# Worker (Cloudflare quota monitor)
-worker/node_modules/
-worker/.wrangler/
-worker/dist/
-
 # Editor / IDE
 .idea/
 .vscode/

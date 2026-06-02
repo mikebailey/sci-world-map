@@ -388,9 +388,26 @@ Mapbox lets you set a monthly billing threshold that emails you (and optionally 
 
 The escape hatch is to drop the Mapbox basemap and render just the boundary polygons on a plain background. Cosmetically worse but Mapbox cost goes to ~$0 at any scale (no tile requests = no tile bill; no map load = no map-load bill). Three independent triggers can flip the page into no-basemap mode:
 
-1. **Manual kill-switch.** Set `DISABLE_BASEMAP: true` in `js/config.js` and redeploy. Useful for testing or for an emergency stop.
+1. **Manual config kill-switch.** Set `DISABLE_BASEMAP: true` in `js/config.js` and redeploy. Slow path (push + Pages build) but it's the most durable — useful for permanent toggles or for testing the fallback look locally.
 2. **Reactive client fallback** (already wired). If a user's browser hits a Mapbox 401/403/429 mid-session, `main.js` flips the no-basemap session flag and reloads the tab into the fallback view. Covers individual users immediately, no infrastructure needed.
-3. **Proactive feature flag** (optional sidecar; see [`worker/`](worker/)). A Cloudflare Worker on a 6-hour cron polls the Mapbox usage API, writes `feature-flags.json` to your R2 bucket when usage crosses configurable thresholds, and emails you. The page fetches this flag on load, so the first user to hit the over-quota threshold gets the fallback transparently instead of seeing a broken canvas. Set this up after the basic deployment is working — `worker/README.md` walks through the Mapbox secret-token + Resend account setup end-to-end.
+3. **Runtime feature flag on R2.** `index.html` fetches `<R2_BASE>/feature-flags.json` on every page load (before `main.js` runs). If that file says `disable_basemap: true`, the page initializes in no-basemap mode without ever asking Mapbox for tiles. Updates propagate to all users within ~60s (the R2 cache TTL).
+
+The runtime flag is written by you, not by an automated poller. **Mapbox does not expose a usage API**, so there's no way to programmatically detect "we're at 80% of monthly quota" the way we'd hoped. Instead, the workflow is:
+
+- **Set a Mapbox spend alert** in their dashboard → **Billing → Spend alerts** → choose a monthly $ threshold. Mapbox emails you when you cross it. This is the early-warning signal, ~24h before any user actually sees a 429.
+- **When you get the alert**, run `bin/disable-basemap.sh` from this repo:
+
+   ```bash
+   bin/disable-basemap.sh
+   ```
+
+   That uploads a `feature-flags.json` to your R2 bucket with `disable_basemap: true`. Every page load from then on serves the no-basemap fallback. Optional argument is a reason string that gets stored in the flag for auditability: `bin/disable-basemap.sh "manual:spend_cap_hit_2026-06"`.
+
+- **On the 1st of next month** (or whenever you've raised the cap), run `bin/enable-basemap.sh` to clear the flag.
+
+Both scripts use `rclone` against your `[r2]` remote and overwrite the flag in place. R2's cache header is set to 60 s, so the change reaches users within a minute.
+
+If for some reason `bin/` isn't handy, you can also edit `feature-flags.json` by hand in the Cloudflare R2 dashboard → bucket → click the file → **Edit metadata + content**. The page reads it identically.
 
 ---
 
