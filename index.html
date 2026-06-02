@@ -89,8 +89,29 @@
     Map design adapted from <a href="https://www.deepmoire.com/" target="_blank" rel="noopener">Deepmoire.com</a>
   </div>
 
-  <!-- config.js must load BEFORE main.js — main.js reads window.SCI_CONFIG -->
+  <!-- config.js must load BEFORE main.js — main.js reads window.SCI_CONFIG.
+       We also fetch the runtime feature flag (written by the optional
+       worker/ cron) before main.js so the no-basemap mode can be activated
+       BEFORE the page tries to load Mapbox tiles. If the flag fetch fails
+       or 404s (e.g. the worker isn't deployed yet) we just proceed with
+       defaults — the page works fine without the flag layer. -->
   <script src="js/config.js"></script>
-  <script src="js/main.js"></script>
+  <script>
+    (function () {
+      var R2 = window.SCI_CONFIG.R2_BASE.replace(/\/$/, "");
+      var loadMain = function () {
+        var s = document.createElement("script");
+        s.src = "js/main.js";
+        document.body.appendChild(s);
+      };
+      fetch(R2 + "/feature-flags.json", { cache: "no-cache" })
+        .then(function (r) { return r.ok ? r.json() : {}; })
+        .catch(function () { return {}; })
+        .then(function (flags) {
+          window.SCI_RUNTIME_FLAGS = flags || {};
+          loadMain();
+        });
+    })();
+  </script>
 </body>
 </html>

@@ -23,12 +23,23 @@ const EMPTY_STYLE = {
   ],
 };
 
-// One key: did we fail Mapbox auth/quota in this tab already? If so, skip
-// the live style on reload and use the empty style from the start, so we
-// don't ping a known-failing endpoint just to fail again.
+// Decide whether to skip the basemap. Three independent sources, any of
+// which is enough to flip the switch:
+//   1. SCI_CONFIG.DISABLE_BASEMAP — manual kill-switch in the deployed
+//      config.js. Hardcoded; flipping it requires a redeploy.
+//   2. SCI_RUNTIME_FLAGS.disable_basemap — runtime flag fetched from
+//      r2:sci-data/feature-flags.json before this file loaded. Written
+//      by the worker/ cron when Mapbox usage crosses the critical
+//      threshold. The page picks up changes on the next load (no redeploy).
+//   3. NO_BASEMAP_SESSION_KEY in sessionStorage — set by the error handler
+//      below after this same tab hit a Mapbox 401/403/429. Stops the page
+//      from re-pinging a known-failing endpoint on every reload within
+//      the tab's lifetime.
 const NO_BASEMAP_SESSION_KEY = "sciMapBasemapFailedThisSession";
+const runtimeFlags = window.SCI_RUNTIME_FLAGS || {};
 const forceNoBasemap =
   !!window.SCI_CONFIG.DISABLE_BASEMAP ||
+  !!runtimeFlags.disable_basemap ||
   sessionStorage.getItem(NO_BASEMAP_SESSION_KEY) === "1";
 
 const map = new mapboxgl.Map({

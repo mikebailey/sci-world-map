@@ -386,7 +386,11 @@ Mapbox lets you set a monthly billing threshold that emails you (and optionally 
 
 ### Killing the basemap if billing becomes a problem
 
-The escape hatch is to drop the Mapbox basemap and render just the boundary polygons on a plain background. Cosmetically worse but Mapbox cost goes to ~$0 at any scale (no tile requests = no tile bill; no map load = no map-load bill). This is a code change of ~10 lines in `main.js`; we haven't done it yet but it's a known fallback.
+The escape hatch is to drop the Mapbox basemap and render just the boundary polygons on a plain background. Cosmetically worse but Mapbox cost goes to ~$0 at any scale (no tile requests = no tile bill; no map load = no map-load bill). Three independent triggers can flip the page into no-basemap mode:
+
+1. **Manual kill-switch.** Set `DISABLE_BASEMAP: true` in `js/config.js` and redeploy. Useful for testing or for an emergency stop.
+2. **Reactive client fallback** (already wired). If a user's browser hits a Mapbox 401/403/429 mid-session, `main.js` flips the no-basemap session flag and reloads the tab into the fallback view. Covers individual users immediately, no infrastructure needed.
+3. **Proactive feature flag** (optional sidecar; see [`worker/`](worker/)). A Cloudflare Worker on a 6-hour cron polls the Mapbox usage API, writes `feature-flags.json` to your R2 bucket when usage crosses configurable thresholds, and emails you. The page fetches this flag on load, so the first user to hit the over-quota threshold gets the fallback transparently instead of seeing a broken canvas. Set this up after the basic deployment is working — `worker/README.md` walks through the Mapbox secret-token + Resend account setup end-to-end.
 
 ---
 
