@@ -121,8 +121,8 @@ If you'd rather **copy the static files** into your own site instead of iframing
 You need [Mike's deployment's Mapbox token to be allowlisted for `http://localhost:4000`](#fork--deploy-your-own-instance) (it already is) and Python.
 
 ```bash
-git clone https://github.com/mikebailey/sci-map.git
-cd sci-map
+git clone https://github.com/mikebailey/sci-world-map.git
+cd sci-world-map
 python3 -m http.server 4000
 # open http://localhost:4000
 ```
