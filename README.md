@@ -392,22 +392,29 @@ The escape hatch is to drop the Mapbox basemap and render just the boundary poly
 2. **Reactive client fallback** (already wired). If a user's browser hits a Mapbox 401/403/429 mid-session, `main.js` flips the no-basemap session flag and reloads the tab into the fallback view. Covers individual users immediately, no infrastructure needed.
 3. **Runtime feature flag on R2.** `index.html` fetches `<R2_BASE>/feature-flags.json` on every page load (before `main.js` runs). If that file says `disable_basemap: true`, the page initializes in no-basemap mode without ever asking Mapbox for tiles. Updates propagate to all users within ~60s (the R2 cache TTL).
 
-The runtime flag is written by you, not by an automated poller. **Mapbox does not expose a usage API**, so there's no way to programmatically detect "we're at 80% of monthly quota" the way we'd hoped. Instead, the workflow is:
+The runtime flag is written by you, not by an automated poller. **Mapbox does not expose a usage API and does not offer configurable spend alerts.** The only programmatic signal they emit is the automatic "free tier exceeded" email sent to the account owner the first time *any* service crosses its free tier in a billing period (50k map loads or 200k vector tiles). That email is your trigger.
 
-- **Set a Mapbox spend alert** in their dashboard → **Billing → Spend alerts** → choose a monthly $ threshold. Mapbox emails you when you cross it. This is the early-warning signal, ~24h before any user actually sees a 429.
-- **When you get the alert**, run `bin/disable-basemap.sh` from this repo:
+Workflow:
+
+- **You get the automatic "free tier exceeded" email from Mapbox.** Nothing to set up — it's already on. The email is the latest possible warning; from this point every additional load is billable, so you have to decide quickly whether to pay through the rest of the month or kill the basemap.
+- **If you want to stop the meter**, run from this repo:
 
    ```bash
    bin/disable-basemap.sh
    ```
 
-   That uploads a `feature-flags.json` to your R2 bucket with `disable_basemap: true`. Every page load from then on serves the no-basemap fallback. Optional argument is a reason string that gets stored in the flag for auditability: `bin/disable-basemap.sh "manual:spend_cap_hit_2026-06"`.
+   That uploads a `feature-flags.json` to your R2 bucket with `disable_basemap: true`. Every page load from then on serves the no-basemap fallback. Optional argument is a reason string that gets stored in the flag for auditability: `bin/disable-basemap.sh "manual:free_tier_hit_2026-06"`.
 
-- **On the 1st of next month** (or whenever you've raised the cap), run `bin/enable-basemap.sh` to clear the flag.
+- **On the 1st of next month**, run `bin/enable-basemap.sh` to clear the flag.
 
 Both scripts use `rclone` against your `[r2]` remote and overwrite the flag in place. R2's cache header is set to 60 s, so the change reaches users within a minute.
 
-If for some reason `bin/` isn't handy, you can also edit `feature-flags.json` by hand in the Cloudflare R2 dashboard → bucket → click the file → **Edit metadata + content**. The page reads it identically.
+If `bin/` isn't handy, you can also edit `feature-flags.json` by hand in the Cloudflare R2 dashboard → bucket → click the file → **Edit metadata + content**. The page reads it identically.
+
+**A few things that would give you earlier warning if you want more headroom than Mapbox's free-tier email provides:**
+
+- Check the Mapbox **Statistics** dashboard manually every few days; it lags ~24h but shows the trend before you hit free tier.
+- The in-browser reactive fallback (layer #1, above) still catches the *first* user who actually hits a 429 — they're flipped into no-basemap mode within their own session. So even with no monitoring at all, the failure mode degrades to "one user sees a brief blank screen during the reload" rather than a broken canvas for everyone.
 
 ---
 
