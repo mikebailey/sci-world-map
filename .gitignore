@@ -1,0 +1,37 @@
+# macOS
+.DS_Store
+
+# ETL working artifacts — never committed; they live in /tmp during a run.
+# See etl/README.md for the full pipeline.
+shards/
+out_v2/
+duckdb_temp/
+binned/
+gadm2.zip
+gadm_410-gpkg.zip
+gadm_410.gpkg
+gadm_410_L2_simple.geojson
+gadm2_world_*.geojson
+!gadm2_world_v5.geojson   # if someone drops the canonical boundary in the repo root for local testing
+*.parquet
+etl_v3.log
+upload*.log
+etl_dual_binning.py
+etl_v2.py
+stage4_stream.py
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Editor / IDE
+.idea/
+.vscode/
+
+# Secrets — never commit. Use a separate rclone config file pointed at by
+# RCLONE_CONFIG=path/to/file or the default ~/.config/rclone/rclone.conf.
+rclone.conf
+.env
+.env.local

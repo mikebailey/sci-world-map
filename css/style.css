@@ -1,0 +1,685 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;400;700&display=swap');
+
+body {
+  font-family: 'Poppins', sans-serif;
+
+}
+
+
+#map {
+  position: fixed;
+  top: 0;
+  left:0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+}
+
+#loading-icon {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 8px solid #f3f3f3; /* Light gray */
+  border-top: 8px solid #3498db; /* Blue */
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  animation: spin 1s linear infinite;
+  z-index: 9999; /* Keep it above everything */
+}
+
+@keyframes spin {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+
+.popup{
+  font-family: 'Poppins', sans-serif;
+ 
+}
+
+.mapboxgl-popup-content{
+ background-color:#ffffff;
+ padding:20px 20px;
+ border-radius:20px;
+ border-color:#dde1ed;
+ border-style:solid;
+ border-width:3px;
+ 
+}
+
+#notFound{
+position:fixed;
+  left:46%;
+  top:46%;
+  font-size:25px;
+  font-weight:600;
+    color: #1879d5;
+}
+
+
+.propPopA-0{
+font-weight:700;
+  font-size:15px;
+line-height:13px;
+  color: #080e2d;
+  margin-bottom:4px;
+}
+
+.propPopA-1{
+
+   margin-bottom:14px;
+  font-size:12px;
+ color: #080e2d;
+ line-height:13px;
+  font-weight:500;
+
+}
+
+#top-10-container{
+  height:520px;
+  overflow-y:scroll;
+}
+
+
+.mapboxgl-popup-anchor-top .mapboxgl-popup-tip,
+.mapboxgl-popup-anchor-top-left .mapboxgl-popup-tip,
+.mapboxgl-popup-anchor-top-right .mapboxgl-popup-tip {
+  border-bottom-color: #080a0d00;
+}
+.mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip,
+.mapboxgl-popup-anchor-bottom-left .mapboxgl-popup-tip,
+.mapboxgl-popup-anchor-bottom-right .mapboxgl-popup-tip {
+  border-top-color: #080a0d00;
+}
+.mapboxgl-popup-anchor-left .mapboxgl-popup-tip {
+  border-right-color: #080a0d00;
+}
+.mapboxgl-popup-anchor-right .mapboxgl-popup-tip {
+  border-left-color: #080a0d00;
+}
+
+.legend-container {
+  font-family: 'Poppins', sans-serif;
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  background: rgba(255, 255, 255, 0.85); /* Slight transparency */
+  padding: 12px;
+  border-radius: 0px; /* Rounded corners */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); /* Soft shadow */
+
+  font-size: 14px;
+  line-height: 1.4;
+   color: #3b464f;
+}
+
+.legend-title {
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 8px;
+  font-size: 15px;
+}
+
+.legend-scale {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+}
+
+.legend-color {
+  width: 52px;
+  height: 12px;
+  margin-right: 8px;
+  border-radius: 4px; /* Rounded color boxes */
+  border: 1px solid rgba(0, 0, 0, 0.1); /* Subtle border */
+}
+
+
+
+
+.table-container {
+  position: relative;;
+  
+ margin-top:30px;
+  background: rgb(255 255 255 / 0%);
+  padding: 0px;
+  border-radius: 0px;
+  box-shadow: 0 0px 0px rgba(0, 0, 0, 0.2);
+  width: 250px;
+  color: #3b464f;
+  width:100%;
+}
+
+.table-title {
+  text-transform:uppercase;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 15px;
+  font-size:13px;
+}
+
+table {
+  text-transform:uppercase;
+  width: 100%;
+  border-collapse: collapse;
+
+}
+
+th, td {
+  padding: 5px;
+  text-align: left;
+  font-size:13px;
+  
+  
+}
+
+th {
+  background-color: #ffffff00;
+ 
+}
+
+td {
+  border-bottom: 1px solid #ddd;
+  line-height:13px;
+   font-size:12px;
+    padding-bottom: 17px;
+  
+}
+
+tr:last-child td {
+  border-bottom: none;
+  
+}
+
+
+tr {
+ line-height:35px;
+}
+.rank-circle {
+  display: inline-block;
+  width: 21px;
+  height: 22px;
+  line-height: 20px;
+  border-radius: 50%;
+  background-color: #cfcfcf;
+  color: white;
+  text-align: center;
+  font-size: 12px;
+  font-weight: bold;
+  
+}
+
+#console{
+  position:fixed;
+  right:0px;
+  background: linear-gradient(to left, white 85%, transparent 100%);
+  height:100%;
+    width:450px;
+  padding: 60px 30px 30px 90px;
+  color: #3b464f;
+}
+
+#title{
+  font-size:22px;
+  margin-bottom:20px;
+  font-weight:700;
+}
+
+#paragraph{
+  font-size:12px;
+    padding: 0px 0px 40px 0px;
+  font-weight:400;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1); /* Subtle border */
+}
+
+#tot-box{
+  position:fixed;
+}
+
+#image-text-container{
+  top:20px;
+  left:42px;
+  position:fixed;
+  background:#ffffff00;
+text-transform:uppercase;
+}
+
+#image-text-container>img{
+ float:left;
+  width:160px;
+  margin-right:0px;
+  
+}
+#soc{
+  margin-top:28px;
+  font-size:18px;
+  font-weight:bold;
+  color: #3b464f;
+}
+
+#reloadIcon{
+  margin-left:5px !important;
+  margin-top:2px;
+  font-size:15px;
+  color: #87d0c9;
+position:absolute;
+}
+
+
+/* width */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #ffffff;
+  border-radius: 10px;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #eaeaea;
+  border-radius: 10px;
+  height: 10px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #dadada;
+}
+
+
+.button-container {
+  position:fixed;
+  top:90px;
+  left:40px;
+}
+
+.button-container>button {
+  padding: 3px 35px;
+  font-size: 12px;
+  font-weight:500;
+
+  margin: 0px;
+  border: solid;
+  border-color:#b8b8b8;
+  cursor: pointer;
+  border-radius: 5px !important;
+  transition: background 0.3s, transform 0.2s;
+  background-color: #ddd;
+  color: #666;
+  
+}
+
+/* Active button */
+button.active {
+  background-color: #525252;
+  color: white;
+}
+
+/* Hover effect for non-active buttons */
+button:not(.active):hover {
+  background-color: #c3c3c3;
+  color: white;
+  transform: scale(1.05);
+}
+
+/* Top-left control stack: title -> level switcher -> About-this-map.
+   Vertical stack so nothing overlaps anything else. */
+#top-controls {
+  position: fixed;
+  top: 50px;
+  left: 14px;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 5px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+/* Title block — neutralise the original fixed positioning + giant top-margin. */
+#image-text-container {
+  position: static;
+  top: auto;
+  left: auto;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  text-transform: none;
+}
+#soc {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.15;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #3b464f;
+}
+#soc-sub {
+  margin: 3px 0 0 0;
+  font-size: 11px;
+  font-weight: 400;
+  color: #6a7480;
+  text-transform: none;
+  letter-spacing: 0.01em;
+}
+
+/* Level switcher — neutralise the original fixed positioning. */
+.button-container {
+  position: static;
+  top: auto;
+  left: auto;
+  display: flex;
+  gap: 4px;
+  margin: 0;
+}
+.button-container > button {
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid #b8b8b8;
+  border-radius: 4px !important;
+  cursor: pointer;
+  background-color: #f2f2f2;
+  color: #555;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s, transform 0.15s;
+  white-space: nowrap;
+}
+.button-container > button.active {
+  background-color: #3b464f;
+  color: #fff;
+  border-color: #3b464f;
+  cursor: default;
+}
+.button-container > button:not(.active):hover {
+  background-color: #d6dade;
+  color: #3b464f;
+  transform: none;
+}
+
+/* Projection switcher (Globe / Flat) — same look as the level switcher
+   but slightly tighter so it reads as a secondary control. */
+.projection-container {
+  display: flex;
+  gap: 4px;
+  margin: 0;
+}
+.projection-container > button {
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  border: 1px solid #c8c8c8;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: #f6f6f6;
+  color: #555;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+.projection-container > button.active {
+  background-color: #3b464f;
+  color: #fff;
+  border-color: #3b464f;
+  cursor: default;
+}
+.projection-container > button:not(.active):hover {
+  background-color: #d6dade;
+  color: #3b464f;
+}
+
+/* "About this map" toggle button (sits below the level switcher). */
+#data-explanation-btn {
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #3b464f;
+  background: transparent;
+  border: 1px solid #c8c8c8;
+  border-radius: 4px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+#data-explanation-btn .info-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #6a7480;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  font-style: italic;
+  line-height: 1;
+}
+#data-explanation-btn[aria-expanded="true"],
+#data-explanation-btn:hover { background: #f2f2f2; }
+
+/* Expandable explanation panel. */
+#data-explanation {
+  position: fixed;
+  top: 50px;
+  left: 14px;
+  z-index: 25;
+  width: 360px;
+  max-width: calc(100vw - 28px);
+  max-height: calc(100vh - 80px);
+  overflow-y: auto;
+  padding: 16px 20px 16px 20px;
+  background: rgba(255, 255, 255, 0.97);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.18);
+  font-family: 'Poppins', sans-serif;
+  font-size: 12px;
+  line-height: 1.55;
+  color: #3b464f;
+}
+#data-explanation[hidden] { display: none; }
+#data-explanation .close-btn {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  background: transparent;
+  border: none;
+  font-size: 22px;
+  line-height: 1;
+  color: #6a7480;
+  cursor: pointer;
+  padding: 0;
+}
+#data-explanation .close-btn:hover { color: #1879d5; }
+#data-explanation h3 {
+  margin: 0 0 10px 0;
+  padding-right: 24px;
+  font-size: 14px;
+  font-weight: 700;
+}
+#data-explanation p {
+  margin: 0 0 10px 0;
+}
+#data-explanation p:last-child { margin-bottom: 0; }
+
+/* Right-side panel: narrower than the original, centred bold title,
+   then legend, then top-10 table. */
+#console {
+  width: 320px;
+  padding: 36px 24px 28px 36px;
+  background: linear-gradient(to left, white 88%, transparent 100%);
+}
+#title {
+  margin: 0 0 14px 0;
+  font-size: 20px;
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.25;
+}
+/* Hide the original long paragraph — its content now lives in #data-explanation. */
+#paragraph { display: none; }
+
+/* In-panel legend (overrides the original fixed bottom-left positioning). */
+#console .console-legend {
+  position: static;
+  margin: 0 0 16px 0;
+  padding: 10px 12px;
+  background: rgba(248, 248, 248, 0.85);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 4px;
+  box-shadow: none;
+  font-size: 12px;
+}
+#console .console-legend .legend-title {
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 6px;
+}
+#console .console-legend .legend-scale { gap: 3px; }
+#console .console-legend .legend-item { font-size: 11px; }
+#console .console-legend .legend-color {
+  width: 40px;
+  height: 10px;
+  margin-right: 8px;
+  border-radius: 2px;
+}
+
+/* World-regions binning-method toggle (Custom / Even). Sits inside the
+   legend panel and only renders on the level3 tab. */
+#bin-method-container {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid #e4e7ea;
+}
+#bin-method-container > button {
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  border: 1px solid #c8c8c8;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: #f6f6f6;
+  color: #555;
+  font-family: inherit;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+#bin-method-container > button.active {
+  background-color: #3b464f;
+  color: #fff;
+  border-color: #3b464f;
+  cursor: default;
+}
+#bin-method-container > button:not(.active):hover {
+  background-color: #d6dade;
+  color: #3b464f;
+}
+
+/* Top-10 area — let it size to viewport instead of a fixed 520 px. */
+#top-10-container {
+  height: auto;
+  max-height: calc(100vh - 320px);
+  overflow-y: auto;
+}
+
+/* Credits — single line, bottom-right. */
+#credits {
+  position: fixed;
+  bottom: 12px;
+  right: 12px;
+  z-index: 9;
+  padding: 6px 12px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #3b464f;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+#credits a { color: #1879d5; text-decoration: none; }
+#credits a:hover { text-decoration: underline; }
+
+/* On narrow screens, drop the right panel to bottom so the map gets the
+   whole viewport, and stack the right-panel contents. */
+@media (max-width: 720px) {
+  #console { width: 100%; max-height: 50vh; padding: 16px 16px 18px; background: rgba(255,255,255,0.96); top: auto; bottom: 0; height: auto; }
+  #data-explanation { width: calc(100vw - 28px); }
+}
+
+/* --- Top-10 table: compact, vertically centred rows, tight column widths --- */
+#top-10-container { margin-top: 14px; }
+.table-title {
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+#top-10-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;        /* lets fixed widths actually stick */
+}
+#top-10-table thead th {
+  padding: 4px 4px;
+  font-size: 11px;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+#top-10-table thead th:last-child {
+  text-align: right;
+}
+#top-10-table tbody tr {
+  line-height: normal;        /* overrides the original tr { line-height:35px } */
+}
+#top-10-table tbody td {
+  padding: 7px 4px;           /* equal top/bottom -> vertically centred text */
+  font-size: 12px;
+  line-height: 1.25;
+  border-bottom: 1px solid #eaeaea;
+  vertical-align: middle;
+}
+#top-10-table tbody tr:last-child td { border-bottom: none; }
+#top-10-table tbody td:last-child {
+  text-align: right;
+  font-weight: 600;
+}
+/* Column widths: rank | name | SCI */
+#top-10-table th:first-child,
+#top-10-table td:first-child {
+  width: 30px;
+  padding-right: 0;
+}
+#top-10-table th:last-child,
+#top-10-table td:last-child {
+  width: 52px;
+  padding-right: 2px;
+}
+.rank-circle {
+  width: 20px;
+  height: 20px;
+  line-height: 20px;
+  font-size: 11px;
+}
+
