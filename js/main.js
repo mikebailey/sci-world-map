@@ -10,14 +10,56 @@ mapboxgl.accessToken = window.SCI_CONFIG.MAPBOX_TOKEN;
 const DEFAULT_CENTER = [-30, 28];
 const DEFAULT_ZOOM = 1.6;
 
+// Empty Mapbox style — no tiles, no labels, no basemap. Used when the
+// basemap is disabled (manually via config or automatically after a Mapbox
+// 401/403/429). The choropleth polygons still render on top; the page
+// looks like a flat-colour world map with the SCI fills drawn on it.
+const EMPTY_STYLE = {
+  version: 8,
+  name: "no-basemap",
+  sources: {},
+  layers: [
+    { id: "bg", type: "background", paint: { "background-color": "#e8ecef" } },
+  ],
+};
+
+// One key: did we fail Mapbox auth/quota in this tab already? If so, skip
+// the live style on reload and use the empty style from the start, so we
+// don't ping a known-failing endpoint just to fail again.
+const NO_BASEMAP_SESSION_KEY = "sciMapBasemapFailedThisSession";
+const forceNoBasemap =
+  !!window.SCI_CONFIG.DISABLE_BASEMAP ||
+  sessionStorage.getItem(NO_BASEMAP_SESSION_KEY) === "1";
+
 const map = new mapboxgl.Map({
   attributionControl: false,
   container: "map",
-  style: "mapbox://styles/mapbox/light-v11",
+  style: forceNoBasemap ? EMPTY_STYLE : "mapbox://styles/mapbox/light-v11",
   center: DEFAULT_CENTER,
   zoom: DEFAULT_ZOOM,
   maxZoom: 8,
 });
+
+// Auto-fallback. Mapbox surfaces tile/style HTTP failures as `error` events
+// on the map. 401 = bad/invalid token, 403 = URL-restricted token used on
+// the wrong origin, 429 = monthly quota exhausted. In any of those cases
+// the basemap will be unusable for the rest of the calendar month (token
+// problems) or until billing rolls over (quota), so we mark the session
+// and reload into no-basemap mode. The reload is the cheapest way to
+// teardown Mapbox's broken tile layers; rebuilding the level0-3 sources
+// would require duplicating setActiveLayer's reset logic.
+if (!forceNoBasemap) {
+  map.on("error", function (e) {
+    if (!e || !e.error) return;
+    const err = e.error;
+    const status = err.status || (err.message && (err.message.match(/HTTP (\d+)/) || [])[1]);
+    if (status == 401 || status == 403 || status == 429) {
+      console.warn("[SCI] Mapbox basemap failure (HTTP " + status + ") — falling back to no-basemap mode.", err);
+      try { sessionStorage.setItem(NO_BASEMAP_SESSION_KEY, "1"); } catch (_) {}
+      window.location.reload();
+    }
+  });
+}
 
 var nav = new mapboxgl.NavigationControl();
 map.addControl(nav, "top-right");
@@ -189,7 +231,7 @@ map.on("load", async function () {
           "fill-opacity": ["case", ["boolean", ["feature-state", "hover"], false], 0.8, 0.9],
         },
       },
-      "waterway-label"
+      map.getLayer("waterway-label") ? "waterway-label" : undefined
     );
 
     map.addLayer(
@@ -210,7 +252,7 @@ map.on("load", async function () {
           "line-opacity": 1,
         },
       },
-      "waterway-label"
+      map.getLayer("waterway-label") ? "waterway-label" : undefined
     );
 
     if (layerName === "level0") {

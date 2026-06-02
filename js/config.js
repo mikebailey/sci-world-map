@@ -28,4 +28,11 @@ window.SCI_CONFIG = {
   // SCI JSONs and the _meta.json threshold file. Each per-source file is
   // named "<GID_2>.json.gz" — e.g. "USA.45.27_1.json.gz" for Uintah, UT.
   R2_GADM2_PATH: "/gadm2_v2/",
+
+  // If true, skip the Mapbox basemap entirely and render the choropleth on
+  // a plain background. Useful as a manual kill-switch if the Mapbox bill
+  // gets out of hand, or to preview what the auto-fallback looks like.
+  // Even when false, main.js will switch to this mode automatically if it
+  // detects a Mapbox 401/403/429 (auth or quota failure) at runtime.
+  DISABLE_BASEMAP: false,
 };
