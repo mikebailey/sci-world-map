@@ -380,9 +380,9 @@ Per-user-per-month assumptions used in the table below:
 
 Tile requests dominate the Mapbox bill — at 100k users/mo, ~77% of the Mapbox cost is tiles, not loads. The 40-tiles-per-user assumption is the squishiest number; lighter usage cuts it in half, heavier (lots of pan/zoom across continents) roughly doubles it.
 
-### Set a budget alert
+### What Mapbox tells you about usage
 
-Mapbox lets you set a monthly billing threshold that emails you (and optionally throttles new tile requests). Do this in **Mapbox dashboard → Billing → Spend alerts**. A single viral post can push you past free tier overnight.
+Mapbox **does not** expose configurable spend alerts or a usage API. The only programmatic signal you get is an automatic email when *any* service first crosses its free tier in a billing period (50k map loads or 200k vector tiles). The email is on by default — you don't set it up — but the warning lands at 100% of free tier, not at a buffer you've chosen. If you want earlier warning, check the **Statistics** page in the Mapbox dashboard manually (it lags ~24 h). The "Killing the basemap" section below explains what to do when the email arrives.
 
 ### Killing the basemap if billing becomes a problem
 
