@@ -12,15 +12,28 @@ Interactive web map of Facebook's **Social Connectedness Index (SCI)** — the r
 
 ## Contents
 
-1. [What the user sees](#what-the-user-sees)
-2. [Architecture & data flow](#architecture--data-flow)
-3. [Embed on your own site](#embed-on-your-own-site)
-4. [Local development](#local-development)
-5. [Fork & deploy your own instance](#fork--deploy-your-own-instance) — full setup walkthrough
-6. [Rebuild the GADM2 dataset (ETL)](#rebuild-the-gadm2-dataset-etl)
-7. [Costs & limits](#costs--limits)
-8. [Contributing](#contributing)
-9. [License](#license)
+1. [Pick how you want to use it](#pick-how-you-want-to-use-it) — wayfinder
+2. [What the user sees](#what-the-user-sees)
+3. [Architecture & data flow](#architecture--data-flow)
+4. [Run it locally — no accounts, no DNS](#run-it-locally--no-accounts-no-dns)
+5. [Embed the canonical deploy on your own site](#embed-the-canonical-deploy-on-your-own-site)
+6. [Fork & deploy your own production instance](#fork--deploy-your-own-production-instance) — full setup walkthrough
+7. [Rebuild the GADM2 dataset (ETL)](#rebuild-the-gadm2-dataset-etl)
+8. [Costs & limits](#costs--limits)
+9. [Contributing](#contributing)
+10. [License](#license)
+
+---
+
+## Pick how you want to use it
+
+Choose the section that matches what you want to do — each gets more involved than the last:
+
+| Goal | Sections to read | What you need beforehand |
+|------|------------------|--------------------------|
+| Just experiment / read the code / contribute a PR | [Run it locally](#run-it-locally--no-accounts-no-dns) | Git + Python. No accounts. |
+| Embed the map on a site you already have | [Embed the canonical deploy](#embed-the-canonical-deploy-on-your-own-site) | A page where you can put one `<iframe>` tag. |
+| Host your own copy on a custom domain | [Fork & deploy](#fork--deploy-your-own-production-instance) | A Mapbox account, a Cloudflare account, and a domain (~30 min). |
 
 ---
 
@@ -96,9 +109,36 @@ R2 serves objects exactly as uploaded. If you upload a gzipped file but only set
 
 ---
 
-## Embed on your own site
+## Run it locally — no accounts, no DNS
 
-The cheapest way to ship this on a site you control is to point an iframe at the canonical deploy:
+The fastest way to look at the code, click around, or develop a PR. Nothing to sign up for.
+
+```bash
+git clone https://github.com/mikebailey/sci-world-map.git
+cd sci-world-map
+python3 -m http.server 4000
+# open http://localhost:4000
+```
+
+That's it. The page fetches the basemap tiles from Mapbox using the bundled token (which is URL-restricted to a small allowlist that includes `http://localhost:4000`, so it works) and the GADM2 data from the canonical Cloudflare R2 bucket. Both are public read-only resources — no auth needed on your side.
+
+What you can do without further setup:
+- Browse + click any country, EU region, US state, or world admin-2 region.
+- Edit `index.html`, `css/style.css`, `js/main.js`, etc. and hit refresh.
+- Open `js/config.js` and flip `DISABLE_BASEMAP: true` to preview the no-basemap fallback look.
+- Submit PRs.
+
+What you **can't** do without further setup:
+- Modify the GADM2 dataset on R2 (read-only access — see [ETL](#rebuild-the-gadm2-dataset-etl) if you want to rebuild from scratch on your own bucket).
+- Deploy your changes to a public site (you'd need your own Mapbox token + R2 — see [Fork & deploy](#fork--deploy-your-own-production-instance)).
+
+If you want to use your *own* Mapbox token and R2 bucket while still serving from `localhost`, do steps 1 and 2 of the Fork section below (Mapbox token + R2 bucket), edit `js/config.js`, and run the same `http.server` command. No DNS, no GitHub Pages.
+
+---
+
+## Embed the canonical deploy on your own site
+
+The cheapest way to ship this on a site you control — no accounts, no servers, no quotas to manage:
 
 ```html
 <iframe
@@ -110,32 +150,15 @@ The cheapest way to ship this on a site you control is to point an iframe at the
 </iframe>
 ```
 
-The iframe makes its own resource fetches as `sci-map.michaelbailey.org`, so the embedding host's domain doesn't need to be on either the Mapbox URL allowlist or the R2 CORS allowlist.
+The iframe makes its own resource fetches as `sci-map.michaelbailey.org`, so the embedding host's domain doesn't need to be on either the Mapbox URL allowlist or the R2 CORS allowlist. Tile and R2 usage count against the canonical deploy's quotas, not yours.
 
-If you'd rather **copy the static files** into your own site instead of iframing, see [Fork & deploy your own instance](#fork--deploy-your-own-instance) — that is the same procedure, just minus the GitHub Pages part.
-
----
-
-## Local development
-
-You need [Mike's deployment's Mapbox token to be allowlisted for `http://localhost:4000`](#fork--deploy-your-own-instance) (it already is) and Python.
-
-```bash
-git clone https://github.com/mikebailey/sci-world-map.git
-cd sci-world-map
-python3 -m http.server 4000
-# open http://localhost:4000
-```
-
-That's it. The page fetches Mapbox tiles + the canonical R2 bucket; no further setup needed for read-only local work.
-
-If you change `js/config.js` to point at *your* R2 bucket, you also need that bucket to allowlist `http://localhost:4000` in its CORS rules (see [CORS](#step-2-configure-cors) below).
+If you'd rather **copy the static files** into your own site instead of iframing (so you can style around them, or so your visitors don't hit a third-party domain), see [Fork & deploy](#fork--deploy-your-own-production-instance) — that is the same procedure, just minus the GitHub Pages part.
 
 ---
 
-## Fork & deploy your own instance
+## Fork & deploy your own production instance
 
-This walkthrough assumes you want to host **your own copy** so its usage doesn't count against `michaelbailey.org`'s Mapbox bill or R2 quota. The walkthrough is written so that an LLM coding agent can follow each step verbatim without further prompts.
+This walkthrough is for hosting your own copy on its own domain, with its own Mapbox + R2 quotas. Roughly 30 minutes end to end. Written so an LLM coding agent can follow each step verbatim without further prompts.
 
 ### Prerequisites
 
