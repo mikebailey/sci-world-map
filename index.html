@@ -8,8 +8,6 @@
 
   <link href="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css" rel="stylesheet">
   <script src="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.js"></script>
-  <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
-  <script src="https://d3js.org/d3.v7.min.js"></script>
 
   <link rel="stylesheet" href="css/style.css" />
 </head>
@@ -19,53 +17,69 @@
   <div id="notFound" style="display: none; opacity: 0;">Data not available</div>
   <div id="loading-icon"></div>
 
-  <!-- Top-left stack: title + subtitle, then the level switcher, then "About this map". -->
+  <!-- Top-left stack: title + (i) About toggle, then level switcher, then Globe/Flat. -->
   <div id="top-controls">
     <div id="image-text-container">
       <p id="soc">Social Connectedness Index</p>
-      <p id="soc-sub">Click any country</p>
+      <button type="button" id="data-explanation-btn" aria-expanded="false" aria-controls="data-explanation"
+              aria-label="About this map" title="About this map">
+        <span class="info-icon" aria-hidden="true">i</span>
+      </button>
     </div>
 
     <div class="button-container">
       <button type="button" id="level0" class="active">Countries</button>
-      <button type="button" id="level1">EU regions</button>
-      <button type="button" id="level2">US states</button>
-      <button type="button" id="level3">World regions</button>
+      <button type="button" id="level1">US states</button>
+      <button type="button" id="level2">Regions</button>
     </div>
 
     <div class="projection-container">
       <button type="button" id="proj-globe" class="active">Globe</button>
       <button type="button" id="proj-flat">Flat</button>
     </div>
-
-    <button type="button" id="data-explanation-btn" aria-expanded="false" aria-controls="data-explanation">
-      <span class="info-icon" aria-hidden="true">i</span> About this map
-    </button>
   </div>
 
-  <!-- Expandable explanation, anchored top-left and floats above the map when open. -->
+  <!-- Expandable "About this map" panel — opens above the map when (i) is clicked. -->
   <div id="data-explanation" hidden>
     <button type="button" class="close-btn" aria-label="Close">×</button>
     <h3>About the Social Connectedness Index</h3>
     <p>The map shows the relative probability that a Facebook user in the selected location has a friendship link to a Facebook user in every other location at the same level.</p>
     <p>The Social Connectedness Index is the number of Facebook friendship links between two locations divided by the product of their Facebook user populations, scaled so only relative values matter (e.g. if the SCI between location A and location B is twice as large as the SCI between location A and location C, then a randomly chosen Facebook user in location A is twice as likely to be friends with a randomly chosen Facebook user in location B than with a user in location C).</p>
-    <p>More details, including the full data download, are available at the <a href="https://data.humdata.org/dataset/social-connectedness-index" target="_blank" rel="noopener">Humanitarian Data Exchange</a>.</p>
+    <p>The <strong>Regions</strong> level is drawn at the finest GADM administrative level appropriate per country — typically GADM2 (municipalities), with some countries pinned to GADM1 (provinces / prefectures) where GADM2 would be too granular, and a few to GADM3 (subdistricts). The hover tooltip and panel title show the GADM level for each clicked region.</p>
+    <p>The official SCI visualization is available at <a href="https://social-connectedness.org/" target="_blank" rel="noopener">social-connectedness.org</a>, with additional map types, downloads, and data exports.</p>
+    <p>Full data downloads are available at the <a href="https://data.humdata.org/dataset/social-connectedness-index" target="_blank" rel="noopener">Humanitarian Data Exchange</a>.</p>
+    <p class="map-attribution">Basemap © <a href="https://www.mapbox.com/about/maps/" target="_blank" rel="noopener">Mapbox</a> · © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> · <a href="https://www.mapbox.com/map-feedback/" target="_blank" rel="noopener">Improve this map</a></p>
   </div>
 
-  <!-- Right-side panel: bold-centered title, then legend, then top-10 table. -->
+  <!-- Right-side results panel: title -> toggles -> legend -> top-10 (visible by default). -->
   <div id="console" style="display: none;">
+    <button type="button" id="console-close" aria-label="Close">×</button>
     <h1 id="title">Selected country</h1>
+
+    <div class="panel-actions">
+      <label class="toggle-row" id="focus-country-row" style="display: none;">
+        <span class="toggle-label">Focus on this country</span>
+        <span class="switch">
+          <input type="checkbox" id="focus-country" />
+          <span class="slider" aria-hidden="true"></span>
+        </span>
+      </label>
+
+      <label class="toggle-row" id="dynamic-scale-row">
+        <span class="toggle-label">Scale colors to the area in view</span>
+        <span class="switch">
+          <input type="checkbox" id="dynamic-scale" />
+          <span class="slider" aria-hidden="true"></span>
+        </span>
+      </label>
+
+      <button type="button" id="top-connections-toggle" aria-expanded="true"
+              aria-controls="top-10-container">Hide top connections</button>
+    </div>
 
     <div id="legend" class="console-legend">
       <div class="legend-title">Likelihood of Friendship</div>
       <div class="legend-scale" id="legend-scale"></div>
-      <!-- World-regions-only: switch between "Custom" (user-suggested ratio
-           bins: 1, 5, 10, 25, 50, 100, 250×) and "Even" (global-quantile bins
-           with roughly equal mass per bucket). Hidden on the other tabs. -->
-      <div id="bin-method-container" style="display: none;">
-        <button type="button" id="bin-a">Custom bins</button>
-        <button type="button" id="bin-b">Even bins</button>
-      </div>
     </div>
 
     <div id="top-10-container" class="table-container">
@@ -86,24 +100,26 @@
   <div id="credits">
     Data: <a href="https://data.humdata.org/dataset/social-connectedness-index" target="_blank" rel="noopener">Facebook Social Connectedness Index</a>
     &nbsp;|&nbsp;
-    Map design adapted from <a href="https://www.deepmoire.com/" target="_blank" rel="noopener">Deepmoire.com</a>
+    Adapted from the <a href="https://social-connectedness.org/explore" target="_blank" rel="noopener">SCI Interactive Explorer</a>
+    &nbsp;|&nbsp;
+    Design from <a href="https://www.deepmoire.com/" target="_blank" rel="noopener">Deepmoire.com</a>
   </div>
 
   <!-- config.js must load BEFORE main.js — main.js reads window.SCI_CONFIG.
-       We also fetch the runtime feature flag (written by the optional
-       worker/ cron) before main.js so the no-basemap mode can be activated
-       BEFORE the page tries to load Mapbox tiles. If the flag fetch fails
-       or 404s (e.g. the worker isn't deployed yet) we just proceed with
-       defaults — the page works fine without the flag layer. -->
+       We also fetch the runtime cost-control flag from R2 *before* main.js so
+       no-basemap mode can be activated BEFORE the page loads Mapbox tiles.
+       If the flag fetch fails or 404s (e.g. the bucket is unreachable), we
+       proceed with defaults — the page works fine without the flag layer. -->
   <script src="js/config.js"></script>
   <script>
     (function () {
-      var R2 = window.SCI_CONFIG.R2_BASE.replace(/\/$/, "");
+      var R2 = (window.SCI_CONFIG.R2_BASE || "").replace(/\/$/, "");
       var loadMain = function () {
         var s = document.createElement("script");
         s.src = "js/main.js";
         document.body.appendChild(s);
       };
+      if (!R2) { window.SCI_RUNTIME_FLAGS = {}; loadMain(); return; }
       fetch(R2 + "/feature-flags.json", { cache: "no-cache" })
         .then(function (r) { return r.ok ? r.json() : {}; })
         .catch(function () { return {}; })
